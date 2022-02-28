@@ -1,62 +1,53 @@
 {
-  "name": "react-drag-drop-container",
-  "version": "6.1.1",
-  "description": "DragDropContainer",
-  "main": "lib/bundle.js",
-  "author": "Peter Hollingsworth",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/peterh32/react-drag-drop-container/issues"
-  },
-  "homepage": "https://github.com/peterh32/react-drag-drop-container#readme",
-  "scripts": {
-    "build": "npm run build-demo; npm run build-dist",
-    "build-demo": "webpack -d; cp ./demo/img/* ./public/img/; cp ./demo/*.html ./public/; cp ./demo/*.css ./public/",
-    "build-dist": "webpack --config webpack.dist.config.js -p",
-    "launch": "webpack-dev-server --hot --inline --open",
-    "lint": "./node_modules/.bin/eslint src --fix --ext js,jsx",
-    "prepublish": "npm run build",
-    "push-demo": "echo \"PUSHING DEMO TO gh-pages\"; npm run build-demo; git subtree push --prefix public origin gh-pages",
-    "start": "webpack-dev-server --hot --inline",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "webpack-dev-server --hot --inline"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/peterh32/react-drag-drop-container.git"
-  },
+  "name": "react-drag-drop-container-typescript",
+  "version": "1.0.0",
+  "description": "Drag & Drop Container in TypeScript",
   "keywords": [
     "drag",
     "drop",
+    "dnd",
     "react"
   ],
-  "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-loader": "^6.4.1",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-react": "^6.24.1",
-    "css-loader": "^0.27.3",
-    "eslint": "^3.19.0",
-    "eslint-config-airbnb": "^14.1.0",
-    "eslint-plugin-import": "^2.13.0",
-    "eslint-plugin-jsx-a11y": "^4.0.0",
-    "eslint-plugin-react": "^6.10.3",
-    "http-server": "^0.9.0",
-    "node-sass": "^4.9.2",
-    "react": "^15.6.2",
-    "react-dom": "^15.6.2",
-    "sass-loader": "^6.0.7",
-    "shortid": "^2.2.12",
-    "style-loader": "^0.16.1",
-    "webpack": "^2.7.0",
-    "webpack-dev-server": "^3.1.11"
+  "license": "MIT",
+  "author": "João Fernandes",
+  "homepage": "https://github.com/0rangeFox/react-drag-drop-container-typescript#readme",
+  "bugs": {
+    "url": "https://github.com/0rangeFox/react-drag-drop-container-typescript/issues"
   },
-  "peerDependencies": {
-    "react": ">=0.14.0",
-    "react-dom": ">=0.14.0"
+  "main": "./lib/index.js",
+  "types": "./es/index.d.ts",
+  "module": "es/index.js",
+  "scripts": {
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --extensions \".js,.ts,.tsx\" --out-dir lib",
+    "build:es": "babel src --extensions \".js,.ts,.tsx\" --out-dir es",
+    "build:types": "tsc",
+    "build": "yarn build:types && yarn build:commonjs && yarn build:es",
+    "clean": "rm -rf lib es",
+    "prepare": "yarn clean && yarn build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0rangeFox/react-drag-drop-container-typescript"
   },
   "dependencies": {
-    "prop-types": "^15.6.2"
+    "@babel/runtime": "^7.17.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.17.6",
+    "@babel/core": "^7.17.5",
+    "@babel/plugin-proposal-decorators": "^7.17.2",
+    "@babel/plugin-transform-react-jsx": "^7.17.3",
+    "@babel/plugin-transform-runtime": "^7.17.0",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-typescript": "^7.16.7",
+    "@types/react": "^17.0.39",
+    "@types/react-dom": "^17.0.11",
+    "cross-env": "^7.0.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "typescript": "^4.5.5"
+  },
+  "peerDependencies": {
+    "react": ">=0.14.0"
   }
 }
