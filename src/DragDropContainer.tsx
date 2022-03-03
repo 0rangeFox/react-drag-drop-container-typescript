@@ -6,11 +6,12 @@ export type DragData = {
   dragElem: HTMLDivElement;
   containerElem: HTMLDivElement;
   sourceElem: HTMLSpanElement;
-}
+};
 
 type DisplayMode = 'disappeared' | 'hidden' | 'normal';
 
-const usesLeftButton = (e: MouseEvent): boolean => (e.button || e.buttons) === 1;
+const usesLeftButton = (e: MouseEvent): boolean =>
+  (e.button || e.buttons) === 1;
 
 interface DragDropContainerProps {
   children: ReactNode;
@@ -65,8 +66,10 @@ interface DragDropContainerState {
   isDragging: boolean;
 }
 
-class DragDropContainer extends Component<DragDropContainerProps, DragDropContainerState> {
-
+class DragDropContainer extends Component<
+  DragDropContainerProps,
+  DragDropContainerState
+> {
   static defaultProps: DragDropContainerProps = {
     targetKey: 'ddc',
     children: null,
@@ -84,7 +87,7 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
     render: undefined,
     xOnly: false,
     yOnly: false,
-    zIndex: 10
+    zIndex: 10,
   };
 
   // The DOM elem we're dragging, and the elements we're dragging over.
@@ -108,12 +111,18 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
     left: 0,
     top: 0,
     clicked: false,
-    isDragging: false
+    isDragging: false,
   };
 
-  private setContainerElemRef(node: HTMLDivElement): void { this.containerElem = node; }
-  private setDragElemRef(node: HTMLDivElement): void { this.dragElem = node; }
-  private setSourceElemRef(node: HTMLSpanElement): void { this.sourceElem = node; }
+  private setContainerElemRef(node: HTMLDivElement): void {
+    this.containerElem = node;
+  }
+  private setDragElemRef(node: HTMLDivElement): void {
+    this.dragElem = node;
+  }
+  private setSourceElemRef(node: HTMLSpanElement): void {
+    this.sourceElem = node;
+  }
 
   public componentDidMount(): void {
     this.containerElem!.addEventListener('mousedown', this.handleMouseDown);
@@ -128,20 +137,27 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
 
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener(`${targetKey}Dropped`, (e: Event) => onDrop(e as CustomEvent<DropData>));
+    document.removeEventListener(`${targetKey}Dropped`, (e: Event) =>
+      onDrop(e as CustomEvent<DropData>)
+    );
   };
 
-  private buildCustomEvent = (eventName: string, extraData: object = {}): CustomEvent<DragData> => new CustomEvent<DragData>(eventName, {
-    bubbles: true,
-    cancelable: true,
-    detail: { // Add useful data to the event
-      dragData: this.props.dragData,
-      dragElem: this.dragElem!,
-      containerElem: this.containerElem!,
-      sourceElem: this.sourceElem!,
-      ...extraData
-    }
-  });
+  private buildCustomEvent = (
+    eventName: string,
+    extraData: object = {}
+  ): CustomEvent<DragData> =>
+    new CustomEvent<DragData>(eventName, {
+      bubbles: true,
+      cancelable: true,
+      detail: {
+        // Add useful data to the event
+        dragData: this.props.dragData,
+        dragElem: this.dragElem!,
+        containerElem: this.containerElem!,
+        sourceElem: this.sourceElem!,
+        ...extraData,
+      },
+    });
 
   // Drop the z-index to get this elem out of the way, figure out what we're dragging over, then reset z-index
   private setCurrentTarget = (x: number, y: number): void => {
@@ -149,7 +165,9 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
     const target = document.elementFromPoint(x, y) || document.body;
     this.dragElem!.style.zIndex = String(this.props.zIndex);
     // Prevent it from selecting itself as the target
-    this.currentTarget = this.dragElem!.contains(target) ? document.body : target;
+    this.currentTarget = this.dragElem!.contains(target)
+      ? document.body
+      : target;
   };
 
   private generateEnterLeaveEvents = (x: number, y: number): void => {
@@ -160,10 +178,14 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
 
     if (this.currentTarget !== this.prevTarget) {
       if (this.prevTarget)
-        this.prevTarget.dispatchEvent(this.buildCustomEvent(`${targetKey}DragLeave`));
+        this.prevTarget.dispatchEvent(
+          this.buildCustomEvent(`${targetKey}DragLeave`)
+        );
 
       if (this.currentTarget)
-        this.currentTarget.dispatchEvent(this.buildCustomEvent(`${targetKey}DragEnter`));
+        this.currentTarget.dispatchEvent(
+          this.buildCustomEvent(`${targetKey}DragEnter`)
+        );
     }
 
     this.prevTarget = this.currentTarget;
@@ -178,7 +200,9 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
     this.currentTarget!.dispatchEvent(customEvent);
 
     // To prevent multiplying events on drop
-    document.removeEventListener(`${targetKey}Dropped`, (e: Event) => onDrop(e as CustomEvent<DropData>));
+    document.removeEventListener(`${targetKey}Dropped`, (e: Event) =>
+      onDrop(e as CustomEvent<DropData>)
+    );
   };
 
   private handleMouseDown = (e: MouseEvent): void => {
@@ -192,7 +216,9 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
   private startDrag = (clickX: number, clickY: number): void => {
     const { targetKey, onDrop, onDragStart, dragData } = this.props;
 
-    document.addEventListener(`${targetKey}Dropped`, (e: Event) => onDrop(e as CustomEvent<DropData>));
+    document.addEventListener(`${targetKey}Dropped`, (e: Event) =>
+      onDrop(e as CustomEvent<DropData>)
+    );
 
     this.setState({
       clicked: true,
@@ -213,14 +239,19 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
     }
   };
 
-  private static getOffscreenCoordinates = (x: number, y: number): [number, number] | undefined => {
+  private static getOffscreenCoordinates = (
+    x: number,
+    y: number
+  ): [number, number] | undefined => {
     // are we offscreen (or very close, anyway)? if so by how much?
     const leftEdge: number = 10;
     const rightEdge: number = window.innerWidth - 10;
     const topEdge: number = 10;
     const bottomEdge: number = window.innerHeight - 10;
-    const xOff: number = x < leftEdge ? x - leftEdge : x > rightEdge ? x - rightEdge : 0;
-    const yOff: number = y < topEdge ? y - topEdge : y > bottomEdge ? y - bottomEdge : 0;
+    const xOff: number =
+      x < leftEdge ? x - leftEdge : x > rightEdge ? x - rightEdge : 0;
+    const yOff: number =
+      y < topEdge ? y - topEdge : y > bottomEdge ? y - bottomEdge : 0;
     return yOff || xOff ? [xOff, yOff] : undefined;
   };
 
@@ -230,7 +261,10 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
     this.generateEnterLeaveEvents(x, y);
 
     const stateChanges: any = { isDragging: true };
-    const offScreen: boolean = !!DragDropContainer.getOffscreenCoordinates(x, y);
+    const offScreen: boolean = !!DragDropContainer.getOffscreenCoordinates(
+      x,
+      y
+    );
 
     if (!offScreen) {
       if (!yOnly) stateChanges.left = this.state.leftOffset + x;
@@ -244,8 +278,7 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
   private handleMouseUp = (e: MouseEvent): void => {
     this.setState({ clicked: false });
 
-    if (this.state.isDragging)
-      this.drop(e.clientX, e.clientY);
+    if (this.state.isDragging) this.drop(e.clientX, e.clientY);
   };
 
   private drop = (x: number, y: number): void => {
@@ -261,7 +294,8 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
   };
 
   private getDisplayMode = (): DisplayMode => {
-    const { dragClone, customDragElement, disappearDraggedElement } = this.props;
+    const { dragClone, customDragElement, disappearDraggedElement } =
+      this.props;
     const { isDragging } = this.state;
 
     if (isDragging && !dragClone && !customDragElement) {
@@ -272,7 +306,13 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
   };
 
   public render(): JSX.Element {
-    const { render: propsRender, children, dragElemOpacity, customDragElement, zIndex } = this.props;
+    const {
+      render: propsRender,
+      children,
+      dragElemOpacity,
+      customDragElement,
+      zIndex,
+    } = this.props;
     const { top, left, isDragging } = this.state;
 
     const content: ReactNode = propsRender ? propsRender(this.state) : children;
@@ -280,11 +320,11 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
     const displayMode: DisplayMode = this.getDisplayMode();
 
     const containerStyles: CSSProperties = {
-      position: displayMode === 'disappeared' ? 'absolute' : 'relative'
+      position: displayMode === 'disappeared' ? 'absolute' : 'relative',
     };
     const sourceElemStyles: CSSProperties = {
       display: displayMode === 'disappeared' ? 'none' : 'inherit',
-      visibility: displayMode === 'hidden' ? 'hidden' : 'inherit'
+      visibility: displayMode === 'hidden' ? 'hidden' : 'inherit',
     };
     const ghostStyles: CSSProperties = {
       top,
@@ -292,21 +332,32 @@ class DragDropContainer extends Component<DragDropContainerProps, DragDropContai
       zIndex,
       position: 'fixed',
       opacity: dragElemOpacity,
-      display: isDragging ? 'block' : 'none'
+      display: isDragging ? 'block' : 'none',
     };
 
     return (
-      <div className='ddcontainer' style={containerStyles} ref={this.setContainerElemRef}>
-        <span className='ddcontainersource' style={sourceElemStyles} ref={this.setSourceElemRef}>
+      <div
+        className="ddcontainer"
+        style={containerStyles}
+        ref={this.setContainerElemRef}
+      >
+        <span
+          className="ddcontainersource"
+          style={sourceElemStyles}
+          ref={this.setSourceElemRef}
+        >
           {content}
         </span>
-        <div className='ddcontainerghost' style={ghostStyles} ref={this.setDragElemRef}>
+        <div
+          className="ddcontainerghost"
+          style={ghostStyles}
+          ref={this.setDragElemRef}
+        >
           {ghostContent}
         </div>
       </div>
     );
   }
-
 }
 
 export default DragDropContainer;

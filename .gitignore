@@ -908,8 +908,4 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
-### Babel Output ###
-lib
-es
-
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,visualstudiocode,visualstudio,node,yarn,react,reactnative,macos,linux,windows

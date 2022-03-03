@@ -1,24 +1,6 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "allowJs": true,
-    "jsx": "react",
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "outDir": "./es",
-    "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true,
-    "rootDirs": ["./src"],
-    "rootDir": "./src",
-    "typeRoots": [
-      "./node_modules/@types",
-    ]
-  },
-  "include": ["src/**/*"],
+  // see https://www.typescriptlang.org/tsconfig to better understand tsconfigs
+  "extends": "@tsconfig/create-react-app/tsconfig.json",
+  "include": ["src", "types"],
   "exclude": ["node_modules"]
 }

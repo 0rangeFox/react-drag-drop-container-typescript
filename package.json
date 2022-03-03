@@ -1,6 +1,6 @@
 {
   "name": "react-drag-drop-container-typescript",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Drag & Drop Container in TypeScript",
   "keywords": [
     "drag",
@@ -14,40 +14,46 @@
   "bugs": {
     "url": "https://github.com/0rangeFox/react-drag-drop-container-typescript/issues"
   },
-  "main": "./lib/index.js",
-  "types": "./es/index.d.ts",
-  "module": "es/index.js",
-  "scripts": {
-    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --extensions \".js,.ts,.tsx\" --out-dir lib",
-    "build:es": "babel src --extensions \".js,.ts,.tsx\" --out-dir es",
-    "build:types": "tsc",
-    "build": "yarn build:types && yarn build:commonjs && yarn build:es",
-    "clean": "rm -rf lib es",
-    "prepare": "yarn clean && yarn build"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/0rangeFox/react-drag-drop-container-typescript"
   },
-  "dependencies": {
-    "@babel/runtime": "^7.17.2"
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "module": "dist/react-drag-drop-container-typescript.esm.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "lint": "dts lint",
+    "prepare": "dts build"
   },
-  "devDependencies": {
-    "@babel/cli": "^7.17.6",
-    "@babel/core": "^7.17.5",
-    "@babel/plugin-proposal-decorators": "^7.17.2",
-    "@babel/plugin-transform-react-jsx": "^7.17.3",
-    "@babel/plugin-transform-runtime": "^7.17.0",
-    "@babel/preset-env": "^7.16.11",
-    "@babel/preset-typescript": "^7.16.7",
-    "@types/react": "^17.0.39",
-    "@types/react-dom": "^17.0.11",
-    "cross-env": "^7.0.3",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "typescript": "^4.5.5"
+  "engines": {
+    "node": ">=12"
   },
   "peerDependencies": {
-    "react": ">=0.14.0"
+    "react": ">=16"
+  },
+  "devDependencies": {
+    "@tsconfig/create-react-app": "^1.0.2",
+    "@types/react": "^17.0.39",
+    "@types/react-dom": "^17.0.13",
+    "dts-cli": "^1.4.0",
+    "husky": "^7.0.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "typescript": "^4.6.2"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "dts lint"
+    }
   }
 }

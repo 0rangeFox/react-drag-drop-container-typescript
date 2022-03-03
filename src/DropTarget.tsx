@@ -5,7 +5,7 @@ export type DropData = {
   dropData: object;
   dragData: object;
   dropElem: HTMLSpanElement;
-}
+};
 
 interface DropTargetProps {
   children: ReactNode;
@@ -29,7 +29,6 @@ interface DropTargetState {
 }
 
 class DropTarget extends Component<DropTargetProps, DropTargetState> {
-
   static defaultProps: DropTargetProps = {
     children: null,
     targetKey: 'ddc',
@@ -38,8 +37,8 @@ class DropTarget extends Component<DropTargetProps, DropTargetState> {
     onHit: () => () => {},
     dropData: {},
     highlightClassName: 'highlighted',
-    render: undefined
-  }
+    render: undefined,
+  };
 
   private targetElement?: HTMLSpanElement = undefined;
 
@@ -49,37 +48,55 @@ class DropTarget extends Component<DropTargetProps, DropTargetState> {
   }
 
   public state: DropTargetState = {
-    highlighted: false
+    highlighted: false,
   };
 
-  private setTargetElementRef(node: HTMLSpanElement): void { this.targetElement = node; }
+  private setTargetElementRef(node: HTMLSpanElement): void {
+    this.targetElement = node;
+  }
 
   public componentDidMount(): void {
     const { targetKey } = this.props;
 
-    this.targetElement!.addEventListener(`${targetKey}DragEnter`, this.handleDragEnter);
-    this.targetElement!.addEventListener(`${targetKey}DragLeave`, this.handleDragLeave);
+    this.targetElement!.addEventListener(
+      `${targetKey}DragEnter`,
+      this.handleDragEnter
+    );
+    this.targetElement!.addEventListener(
+      `${targetKey}DragLeave`,
+      this.handleDragLeave
+    );
     this.targetElement!.addEventListener(`${targetKey}Drop`, this.handleDrop);
   }
 
-  private static createEvent = (eventName: string, eventData: DropData): CustomEvent<DropData> =>
-    new CustomEvent<DropData>(eventName, { bubbles: true, cancelable: true, detail: eventData });
+  private static createEvent = (
+    eventName: string,
+    eventData: DropData
+  ): CustomEvent<DropData> =>
+    new CustomEvent<DropData>(eventName, {
+      bubbles: true,
+      cancelable: true,
+      detail: eventData,
+    });
 
   // Tell the drop source about the drop, then do the callback
   private handleDrop = (e: Event): void => {
     const { targetKey, dropData, onHit } = this.props;
     const event: CustomEvent<DragData> = e as CustomEvent<DragData>;
 
-    const evt: CustomEvent<DropData> = DropTarget.createEvent(`${targetKey}Dropped`, {
-      dropData,
-      dragData: event.detail.dragData,
-      dropElem: this.targetElement!,
-    });
+    const evt: CustomEvent<DropData> = DropTarget.createEvent(
+      `${targetKey}Dropped`,
+      {
+        dropData,
+        dragData: event.detail.dragData,
+        dropElem: this.targetElement!,
+      }
+    );
 
     event.detail.containerElem.dispatchEvent(evt);
     onHit(event);
     this.setState({ highlighted: false });
-  }
+  };
 
   private handleDragEnter = (e: Event): void => {
     const { highlightClassName, onDragEnter } = this.props;
@@ -88,7 +105,7 @@ class DropTarget extends Component<DropTargetProps, DropTargetState> {
     highlightClassName && this.setState({ highlighted: true });
 
     onDragEnter(event);
-  }
+  };
 
   private handleDragLeave = (e: Event): void => {
     const { highlightClassName, onDragLeave } = this.props;
@@ -97,22 +114,23 @@ class DropTarget extends Component<DropTargetProps, DropTargetState> {
     highlightClassName && this.setState({ highlighted: false });
 
     onDragLeave(event);
-  }
+  };
 
   public render(): JSX.Element {
     const { render: propsRender, children, highlightClassName } = this.props;
     const { highlighted } = this.state;
 
     const content: ReactNode = propsRender ? propsRender() : children;
-    const targetElemClassNames = `droptarget ${highlighted ? highlightClassName : ''}`;
+    const targetElemClassNames = `droptarget ${
+      highlighted ? highlightClassName : ''
+    }`;
 
     return (
       <span ref={this.setTargetElementRef} className={targetElemClassNames}>
-				{content}
-			</span>
+        {content}
+      </span>
     );
   }
-
 }
 
 export default DropTarget;
