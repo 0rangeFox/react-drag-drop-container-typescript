@@ -1,11 +1,21 @@
 <h1 align="center"><img src="https://cdn.iconscout.com/icon/free/png-32/typescript-1174965.png" /> DragDropContainer and DropTarget</h1>
+<h6 align="center"><a href="https://www.npmjs.com/package/react-drag-drop-container-typescript" ><img src="https://img.shields.io/npm/v/react-drag-drop-container-typescript.svg?style=flat-square" /></a></h6>
 
 > A ReactJS library with Drag and Drop functionality for mouse and touch devices.
 
 ## 🔖 Description
 The following library allows us to create Drag & Drop interactions more effectively and natively without using HTML5. This library was not made by me, but by [Peter Hollingsworth](https://github.com/peterh32), this is just maintenance and improvements of the [old library](https://github.com/peterh32/react-drag-drop-container).
 
-## Code example
+## 💾 Installation
+```bash
+# NPM
+npm install react-drag-drop-container-typescript
+
+# Yarn
+yarn add react-drag-drop-container-typescript
+```
+
+## ⌨️ Code example
 ```typescript jsx
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container-typescript';
 
