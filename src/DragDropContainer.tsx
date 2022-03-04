@@ -133,13 +133,11 @@ class DragDropContainer extends Component<
   }
 
   private removeListeners = (): void => {
-    const { targetKey, onDrop } = this.props;
+    const { targetKey } = this.props;
 
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener(`${targetKey}Dropped`, (e: Event) =>
-      onDrop(e as CustomEvent<DropData>)
-    );
+    document.removeEventListener(`${targetKey}Dropped`, this.handleDrop);
   };
 
   private buildCustomEvent = (
@@ -192,7 +190,7 @@ class DragDropContainer extends Component<
   };
 
   private generateDropEvent = (x: number, y: number): void => {
-    const { targetKey, onDrop } = this.props;
+    const { targetKey } = this.props;
 
     // Generate a drop event in whatever we're currently dragging over
     this.setCurrentTarget(x, y);
@@ -200,9 +198,7 @@ class DragDropContainer extends Component<
     this.currentTarget!.dispatchEvent(customEvent);
 
     // To prevent multiplying events on drop
-    document.removeEventListener(`${targetKey}Dropped`, (e: Event) =>
-      onDrop(e as CustomEvent<DropData>)
-    );
+    document.removeEventListener(`${targetKey}Dropped`, this.handleDrop);
   };
 
   private handleMouseDown = (e: MouseEvent): void => {
@@ -214,21 +210,20 @@ class DragDropContainer extends Component<
   };
 
   private startDrag = (clickX: number, clickY: number): void => {
-    const { targetKey, onDrop, onDragStart, dragData } = this.props;
+    const { targetKey, onDragStart, dragData } = this.props;
 
-    document.addEventListener(`${targetKey}Dropped`, (e: Event) =>
-      onDrop(e as CustomEvent<DropData>)
+    document.addEventListener(`${targetKey}Dropped`, this.handleDrop);
+
+    this.setState(
+      {
+        clicked: true,
+        leftOffset: 5,
+        topOffset: 15,
+        left: clickX,
+        top: clickY,
+      },
+      () => onDragStart(dragData)
     );
-
-    this.setState({
-      clicked: true,
-      leftOffset: 5,
-      topOffset: 15,
-      left: clickX,
-      top: clickY,
-    });
-
-    onDragStart(dragData);
   };
 
   private handleMouseMove = (e: MouseEvent): void => {
@@ -271,15 +266,19 @@ class DragDropContainer extends Component<
       if (!xOnly) stateChanges.top = this.state.topOffset + y;
     }
 
-    this.setState(stateChanges);
-    onDrag(dragData, this.currentTarget!, x, y);
+    this.setState(stateChanges, () =>
+      onDrag(dragData, this.currentTarget!, x, y)
+    );
   };
 
-  private handleMouseUp = (e: MouseEvent): void => {
-    this.setState({ clicked: false });
+  private handleMouseUp = (e: MouseEvent): void =>
+    this.setState(
+      { clicked: false },
+      () => this.state.isDragging && this.drop(e.clientX, e.clientY)
+    );
 
-    if (this.state.isDragging) this.drop(e.clientX, e.clientY);
-  };
+  private handleDrop = (e: Event): void =>
+    this.props.onDrop(e as CustomEvent<DropData>);
 
   private drop = (x: number, y: number): void => {
     const { dragData, onDragEnd } = this.props;
@@ -288,9 +287,9 @@ class DragDropContainer extends Component<
 
     this.removeListeners();
 
-    this.setState({ isDragging: false }, () => {
-      onDragEnd(dragData, this.currentTarget!, x, y);
-    });
+    this.setState({ isDragging: false }, () =>
+      onDragEnd(dragData, this.currentTarget!, x, y)
+    );
   };
 
   private getDisplayMode = (): DisplayMode => {
