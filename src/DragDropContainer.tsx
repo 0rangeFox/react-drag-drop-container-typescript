@@ -8,7 +8,11 @@ export type DragData = {
   sourceElem: HTMLSpanElement;
 };
 
-type DisplayMode = 'disappeared' | 'hidden' | 'normal';
+enum DisplayMode {
+  DISAPPEARED,
+  HIDDEN,
+  NORMAL,
+}
 
 const usesLeftButton = (e: MouseEvent): boolean =>
   (e.button || e.buttons) === 1;
@@ -297,11 +301,11 @@ class DragDropContainer extends Component<
       this.props;
     const { isDragging } = this.state;
 
-    if (isDragging && !dragClone && !customDragElement) {
-      if (disappearDraggedElement) return 'disappeared';
-      return 'hidden';
-    }
-    return 'normal';
+    if (isDragging && !dragClone && !customDragElement)
+      return disappearDraggedElement
+        ? DisplayMode.DISAPPEARED
+        : DisplayMode.HIDDEN;
+    return DisplayMode.NORMAL;
   };
 
   public render(): JSX.Element {
@@ -319,11 +323,12 @@ class DragDropContainer extends Component<
     const displayMode: DisplayMode = this.getDisplayMode();
 
     const containerStyles: CSSProperties = {
-      position: displayMode === 'disappeared' ? 'absolute' : 'relative',
+      position:
+        displayMode === DisplayMode.DISAPPEARED ? 'absolute' : 'relative',
     };
     const sourceElemStyles: CSSProperties = {
-      display: displayMode === 'disappeared' ? 'none' : 'inherit',
-      visibility: displayMode === 'hidden' ? 'hidden' : 'inherit',
+      display: displayMode === DisplayMode.DISAPPEARED ? 'none' : 'inherit',
+      visibility: displayMode === DisplayMode.HIDDEN ? 'hidden' : 'inherit',
     };
     const ghostStyles: CSSProperties = {
       top,
