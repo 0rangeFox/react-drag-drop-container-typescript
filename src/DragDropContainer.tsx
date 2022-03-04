@@ -1,8 +1,8 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
 import { DropData } from './DropTarget';
 
-export type DragData = {
-  dragData: object;
+export type DragData<T = any> = {
+  dragData: T;
   dragElem: HTMLDivElement;
   containerElem: HTMLDivElement;
   sourceElem: HTMLSpanElement;
@@ -17,7 +17,7 @@ enum DisplayMode {
 const usesLeftButton = (e: MouseEvent): boolean =>
   (e.button || e.buttons) === 1;
 
-interface DragDropContainerProps {
+interface DragDropContainerProps<TDrag, TDrop> {
   children: ReactNode;
 
   // Determines what you can drop on
@@ -36,7 +36,7 @@ interface DragDropContainerProps {
   dragElemOpacity: number;
 
   // We will pass this data to the target when you drag or drop over it
-  dragData: object;
+  dragData: TDrag;
 
   // If included, we'll only let you drag by grabbing elements with this className
   dragHandleClassName: string;
@@ -45,10 +45,10 @@ interface DragDropContainerProps {
   noDragging: boolean;
 
   // Callbacks (optional):
-  onDrop(event: CustomEvent<DropData>): void;
-  onDrag(data: object, target: Element, x: number, y: number): void;
-  onDragEnd(data: object, target: Element, x: number, y: number): void;
-  onDragStart(data: object): void;
+  onDrop(event: CustomEvent<DropData<TDrop, TDrag>>): void;
+  onDrag(data: TDrag, target: Element, x: number, y: number): void;
+  onDragEnd(data: TDrag, target: Element, x: number, y: number): void;
+  onDragStart(data: TDrag): void;
 
   // Enable a render prop
   render?(state: DragDropContainerState): ReactNode;
@@ -70,11 +70,11 @@ interface DragDropContainerState {
   isDragging: boolean;
 }
 
-class DragDropContainer extends Component<
-  DragDropContainerProps,
+class DragDropContainer<TDrag, TDrop> extends Component<
+  DragDropContainerProps<TDrag, TDrop>,
   DragDropContainerState
 > {
-  static defaultProps: DragDropContainerProps = {
+  static defaultProps: DragDropContainerProps<object, object> = {
     targetKey: 'ddc',
     children: null,
     customDragElement: null,
@@ -101,7 +101,7 @@ class DragDropContainer extends Component<
   private currentTarget?: Element;
   private prevTarget?: Element;
 
-  private constructor(props: DragDropContainerProps) {
+  private constructor(props: DragDropContainerProps<TDrag, TDrop>) {
     super(props);
 
     this.setContainerElemRef = this.setContainerElemRef.bind(this);
@@ -147,8 +147,8 @@ class DragDropContainer extends Component<
   private buildCustomEvent = (
     eventName: string,
     extraData: object = {}
-  ): CustomEvent<DragData> =>
-    new CustomEvent<DragData>(eventName, {
+  ): CustomEvent<DragData<TDrag>> =>
+    new CustomEvent<DragData<TDrag>>(eventName, {
       bubbles: true,
       cancelable: true,
       detail: {
@@ -282,7 +282,7 @@ class DragDropContainer extends Component<
     );
 
   private handleDrop = (e: Event): void =>
-    this.props.onDrop(e as CustomEvent<DropData>);
+    this.props.onDrop(e as CustomEvent<DropData<TDrop, TDrag>>);
 
   private drop = (x: number, y: number): void => {
     const { dragData, onDragEnd } = this.props;
