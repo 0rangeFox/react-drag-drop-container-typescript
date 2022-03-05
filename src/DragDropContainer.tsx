@@ -1,11 +1,17 @@
 import React, { Component, CSSProperties, ReactNode } from 'react';
 import { DropData } from './DropTarget';
 
-export type DragData<T = any> = {
+interface DragData<T = any> {
   dragData: T;
   dragElem: HTMLDivElement;
   containerElem: HTMLDivElement;
   sourceElem: HTMLSpanElement;
+}
+
+type HitDragData<T = any> = DragData<T> & {
+  targetKey: string;
+  x: number;
+  y: number;
 };
 
 enum DisplayMode {
@@ -21,7 +27,7 @@ interface DragDropContainerProps<TDrag, TDrop> {
   children: ReactNode;
 
   // Determines what you can drop on
-  targetKey: string;
+  targetKey: string | string[];
 
   // If provided, we'll drag this instead of the actual object. Takes priority over dragClone if both are set
   customDragElement: ReactNode;
@@ -141,7 +147,9 @@ class DragDropContainer<TDrag, TDrop> extends Component<
 
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener(`${targetKey}Dropped`, this.handleDrop);
+    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+      (key) => document.removeEventListener(`${key}Dropped`, this.handleDrop)
+    );
   };
 
   private buildCustomEvent = (
@@ -180,13 +188,19 @@ class DragDropContainer<TDrag, TDrop> extends Component<
 
     if (this.currentTarget !== this.prevTarget) {
       if (this.prevTarget)
-        this.prevTarget.dispatchEvent(
-          this.buildCustomEvent(`${targetKey}DragLeave`)
+        (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+          (key) =>
+            this.prevTarget!.dispatchEvent(
+              this.buildCustomEvent(`${key}DragLeave`)
+            )
         );
 
       if (this.currentTarget)
-        this.currentTarget.dispatchEvent(
-          this.buildCustomEvent(`${targetKey}DragEnter`)
+        (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+          (key) =>
+            this.currentTarget!.dispatchEvent(
+              this.buildCustomEvent(`${key}DragEnter`)
+            )
         );
     }
 
@@ -198,11 +212,18 @@ class DragDropContainer<TDrag, TDrop> extends Component<
 
     // Generate a drop event in whatever we're currently dragging over
     this.setCurrentTarget(x, y);
-    const customEvent = this.buildCustomEvent(`${targetKey}Drop`, { x, y });
-    this.currentTarget!.dispatchEvent(customEvent);
+
+    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+      (key) =>
+        this.currentTarget!.dispatchEvent(
+          this.buildCustomEvent(`${key}Drop`, { targetKey: key, x, y })
+        )
+    );
 
     // To prevent multiplying events on drop
-    document.removeEventListener(`${targetKey}Dropped`, this.handleDrop);
+    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+      (key) => document.removeEventListener(`${key}Dropped`, this.handleDrop)
+    );
   };
 
   private handleMouseDown = (e: MouseEvent): void => {
@@ -216,7 +237,9 @@ class DragDropContainer<TDrag, TDrop> extends Component<
   private startDrag = (clickX: number, clickY: number): void => {
     const { targetKey, onDragStart, dragData } = this.props;
 
-    document.addEventListener(`${targetKey}Dropped`, this.handleDrop);
+    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+      (key) => document.addEventListener(`${key}Dropped`, this.handleDrop)
+    );
 
     this.setState(
       {
@@ -364,4 +387,5 @@ class DragDropContainer<TDrag, TDrop> extends Component<
   }
 }
 
+export type { DragData, HitDragData };
 export default DragDropContainer;

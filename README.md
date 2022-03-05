@@ -16,6 +16,7 @@ yarn add react-drag-drop-container-typescript
 ```
 
 ## ⌨️ Code example
+Only **single** target key:
 ```typescript jsx
 import { DragDropContainer, DropTarget } from 'react-drag-drop-container-typescript';
 
@@ -24,6 +25,19 @@ import { DragDropContainer, DropTarget } from 'react-drag-drop-container-typescr
 </DragDropContainer>
 
 <DropTarget targetKey="foo" >
+    <p>I'm a valid drop target for the object above since we both have the same targetKey!</p>
+</DropTarget>
+```
+
+With **multiple** target keys:
+```typescript jsx
+import { DragDropContainer, DropTarget } from 'react-drag-drop-container-typescript';
+
+<DragDropContainer targetKey={[ "foo", "bar" ]} >
+    <div>Drag Me!</div>
+</DragDropContainer>
+
+<DropTarget targetKey={[ "foo", "bar" ]} >
     <p>I'm a valid drop target for the object above since we both have the same targetKey!</p>
 </DropTarget>
 ```

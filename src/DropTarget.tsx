@@ -1,11 +1,11 @@
 import React, { Component, ReactNode } from 'react';
-import { DragData } from './DragDropContainer';
+import { DragData, HitDragData } from './DragDropContainer';
 
-export type DropData<TDrop = any, TDrag = any> = {
+interface DropData<TDrop = any, TDrag = any> {
   dropData: TDrop;
   dragData: TDrag;
   dropElem: HTMLSpanElement;
-};
+}
 
 interface DropTargetProps<TDrop, TDrag> {
   children: ReactNode;
@@ -13,7 +13,7 @@ interface DropTargetProps<TDrop, TDrag> {
   highlightClassName: string;
 
   // Needs to match the targetKey in the DragDropContainer -- matched via the enter/leave/drop event names, above
-  targetKey: string;
+  targetKey: string | string[];
 
   // Data that gets sent back to the DragDropContainer and shows up in its onDrop() callback event
   dropData: TDrop;
@@ -21,7 +21,7 @@ interface DropTargetProps<TDrop, TDrag> {
   // Callbacks
   onDragEnter(event: CustomEvent<DragData<TDrag>>): void;
   onDragLeave(event: CustomEvent<DragData<TDrag>>): void;
-  onHit(event: CustomEvent<DragData<TDrag>>): void;
+  onHit(event: CustomEvent<HitDragData<TDrag>>): void;
 }
 
 interface DropTargetState {
@@ -61,15 +61,26 @@ class DropTarget<TDrop, TDrag> extends Component<
   public componentDidMount(): void {
     const { targetKey } = this.props;
 
-    this.targetElement!.addEventListener(
-      `${targetKey}DragEnter`,
-      this.handleDragEnter
+    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+      (key) =>
+        this.targetElement!.addEventListener(
+          `${key}DragEnter`,
+          this.handleDragEnter
+        )
     );
-    this.targetElement!.addEventListener(
-      `${targetKey}DragLeave`,
-      this.handleDragLeave
+
+    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+      (key) =>
+        this.targetElement!.addEventListener(
+          `${key}DragLeave`,
+          this.handleDragLeave
+        )
     );
-    this.targetElement!.addEventListener(`${targetKey}Drop`, this.handleDrop);
+
+    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+      (key) =>
+        this.targetElement!.addEventListener(`${key}Drop`, this.handleDrop)
+    );
   }
 
   private static createEvent = <TDrop, TDrag>(
@@ -85,20 +96,21 @@ class DropTarget<TDrop, TDrag> extends Component<
   // Tell the drop source about the drop, then do the callback
   private handleDrop = (e: Event): void => {
     const { targetKey, dropData, onHit } = this.props;
-    const event: CustomEvent<DragData<TDrag>> = e as CustomEvent<
-      DragData<TDrag>
+    const event: CustomEvent<HitDragData<TDrag>> = e as CustomEvent<
+      HitDragData<TDrag>
     >;
 
-    const evt: CustomEvent<DropData<TDrop, TDrag>> = DropTarget.createEvent(
-      `${targetKey}Dropped`,
-      {
-        dropData,
-        dragData: event.detail.dragData,
-        dropElem: this.targetElement!,
-      }
+    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
+      (key) =>
+        event.detail.containerElem.dispatchEvent(
+          DropTarget.createEvent(`${key}Dropped`, {
+            dropData,
+            dragData: event.detail.dragData,
+            dropElem: this.targetElement!,
+          })
+        )
     );
 
-    event.detail.containerElem.dispatchEvent(evt);
     onHit(event);
     this.setState({ highlighted: false });
   };
@@ -142,4 +154,5 @@ class DropTarget<TDrop, TDrag> extends Component<
   }
 }
 
+export type { DropData };
 export default DropTarget;
