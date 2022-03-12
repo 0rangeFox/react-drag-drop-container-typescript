@@ -1,7 +1,15 @@
-import React, { Component, CSSProperties, ReactNode } from 'react';
+import React, {
+  Component,
+  createRef,
+  CSSProperties,
+  ReactNode,
+  RefObject,
+} from 'react';
 import { DropData } from './DropTarget';
+import Event from './utils/Event';
 
 interface DragData<T = any> {
+  targetKey: string;
   dragData: T;
   dragElem: HTMLDivElement;
   containerElem: HTMLDivElement;
@@ -9,7 +17,6 @@ interface DragData<T = any> {
 }
 
 type HitDragData<T = any> = DragData<T> & {
-  targetKey: string;
   x: number;
   y: number;
 };
@@ -100,20 +107,14 @@ class DragDropContainer<TDrag, TDrop> extends Component<
     zIndex: 10,
   };
 
+  private containerElement: RefObject<HTMLDivElement> =
+    createRef<HTMLDivElement>();
   // The DOM elem we're dragging, and the elements we're dragging over.
-  private dragElem?: HTMLDivElement;
-  private containerElem?: HTMLDivElement;
-  private sourceElem?: HTMLSpanElement;
+  private dragElement: RefObject<HTMLDivElement> = createRef<HTMLDivElement>();
+  private sourceElement: RefObject<HTMLSpanElement> =
+    createRef<HTMLDivElement>();
   private currentTarget?: Element;
   private prevTarget?: Element;
-
-  private constructor(props: DragDropContainerProps<TDrag, TDrop>) {
-    super(props);
-
-    this.setContainerElemRef = this.setContainerElemRef.bind(this);
-    this.setDragElemRef = this.setDragElemRef.bind(this);
-    this.setSourceElemRef = this.setSourceElemRef.bind(this);
-  }
 
   public state: DragDropContainerState = {
     leftOffset: 0,
@@ -124,18 +125,11 @@ class DragDropContainer<TDrag, TDrop> extends Component<
     isDragging: false,
   };
 
-  private setContainerElemRef(node: HTMLDivElement): void {
-    this.containerElem = node;
-  }
-  private setDragElemRef(node: HTMLDivElement): void {
-    this.dragElem = node;
-  }
-  private setSourceElemRef(node: HTMLSpanElement): void {
-    this.sourceElem = node;
-  }
-
   public componentDidMount(): void {
-    this.containerElem!.addEventListener('mousedown', this.handleMouseDown);
+    this.containerElement.current!.addEventListener(
+      'mousedown',
+      this.handleMouseDown
+    );
   }
 
   public componentWillUnmount(): void {
@@ -147,35 +141,29 @@ class DragDropContainer<TDrag, TDrop> extends Component<
 
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);
-    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
-      (key) => document.removeEventListener(`${key}Dropped`, this.handleDrop)
+    Event.RemoveListener(
+      document.documentElement,
+      targetKey,
+      'Dropped',
+      this.handleDrop
     );
   };
 
-  private buildCustomEvent = (
-    eventName: string,
-    extraData: object = {}
-  ): CustomEvent<DragData<TDrag>> =>
-    new CustomEvent<DragData<TDrag>>(eventName, {
-      bubbles: true,
-      cancelable: true,
-      detail: {
-        // Add useful data to the event
-        dragData: this.props.dragData,
-        dragElem: this.dragElem!,
-        containerElem: this.containerElem!,
-        sourceElem: this.sourceElem!,
-        ...extraData,
-      },
-    });
+  private generateDragData = (): DragData<TDrag> => ({
+    targetKey: '',
+    dragData: this.props.dragData,
+    dragElem: this.dragElement.current!,
+    containerElem: this.containerElement.current!,
+    sourceElem: this.sourceElement.current!,
+  });
 
   // Drop the z-index to get this elem out of the way, figure out what we're dragging over, then reset z-index
   private setCurrentTarget = (x: number, y: number): void => {
-    this.dragElem!.style.zIndex = String(-1);
+    this.dragElement.current!.style.zIndex = String(-1);
     const target = document.elementFromPoint(x, y) || document.body;
-    this.dragElem!.style.zIndex = String(this.props.zIndex);
+    this.dragElement.current!.style.zIndex = String(this.props.zIndex);
     // Prevent it from selecting itself as the target
-    this.currentTarget = this.dragElem!.contains(target)
+    this.currentTarget = this.dragElement.current!.contains(target)
       ? document.body
       : target;
   };
@@ -188,19 +176,19 @@ class DragDropContainer<TDrag, TDrop> extends Component<
 
     if (this.currentTarget !== this.prevTarget) {
       if (this.prevTarget)
-        (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
-          (key) =>
-            this.prevTarget!.dispatchEvent(
-              this.buildCustomEvent(`${key}DragLeave`)
-            )
+        Event.Dispatch<DragData<TDrag>>(
+          this.prevTarget,
+          targetKey,
+          'DragLeave',
+          this.generateDragData()
         );
 
       if (this.currentTarget)
-        (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
-          (key) =>
-            this.currentTarget!.dispatchEvent(
-              this.buildCustomEvent(`${key}DragEnter`)
-            )
+        Event.Dispatch<DragData<TDrag>>(
+          this.currentTarget,
+          targetKey,
+          'DragEnter',
+          this.generateDragData()
         );
     }
 
@@ -213,16 +201,18 @@ class DragDropContainer<TDrag, TDrop> extends Component<
     // Generate a drop event in whatever we're currently dragging over
     this.setCurrentTarget(x, y);
 
-    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
-      (key) =>
-        this.currentTarget!.dispatchEvent(
-          this.buildCustomEvent(`${key}Drop`, { targetKey: key, x, y })
-        )
-    );
+    Event.Dispatch<HitDragData<TDrag>>(this.currentTarget!, targetKey, 'Drop', {
+      ...this.generateDragData(),
+      x,
+      y,
+    });
 
     // To prevent multiplying events on drop
-    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
-      (key) => document.removeEventListener(`${key}Dropped`, this.handleDrop)
+    Event.RemoveListener(
+      document.documentElement,
+      targetKey,
+      'Dropped',
+      this.handleDrop
     );
   };
 
@@ -237,8 +227,11 @@ class DragDropContainer<TDrag, TDrop> extends Component<
   private startDrag = (clickX: number, clickY: number): void => {
     const { targetKey, onDragStart, dragData } = this.props;
 
-    (Array.isArray(targetKey) ? targetKey : [targetKey as string]).forEach(
-      (key) => document.addEventListener(`${key}Dropped`, this.handleDrop)
+    Event.AddListener(
+      document.documentElement,
+      targetKey,
+      'Dropped',
+      this.handleDrop
     );
 
     this.setState(
@@ -256,7 +249,6 @@ class DragDropContainer<TDrag, TDrop> extends Component<
   private handleMouseMove = (e: MouseEvent): void => {
     if (!this.props.noDragging && this.state.clicked) {
       e.preventDefault();
-
       this.drag(e.clientX, e.clientY);
     }
   };
@@ -366,19 +358,19 @@ class DragDropContainer<TDrag, TDrop> extends Component<
       <div
         className="ddcontainer"
         style={containerStyles}
-        ref={this.setContainerElemRef}
+        ref={this.containerElement}
       >
         <span
           className="ddcontainersource"
           style={sourceElemStyles}
-          ref={this.setSourceElemRef}
+          ref={this.sourceElement}
         >
           {content}
         </span>
         <div
           className="ddcontainerghost"
           style={ghostStyles}
-          ref={this.setDragElemRef}
+          ref={this.dragElement}
         >
           {ghostContent}
         </div>
