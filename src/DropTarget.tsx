@@ -10,6 +10,7 @@ import { DragData, HitDragData } from './DragDropContainer';
 import Event from './utils/Event';
 
 interface DropData<TDrop = any, TDrag = any> {
+  targetKey: string;
   dropData: TDrop;
   dragData: TDrag;
   dropElem: HTMLSpanElement;
@@ -76,11 +77,17 @@ const DropTarget: FunctionComponent<DropTargetProps<any, any>> = <
         HitDragData<TDrag>
       >;
 
-      Event.Dispatch(event.detail.containerElem, targetKey, 'Dropped', {
-        dropData,
-        dragData: event.detail.dragData,
-        dropElem: targetElement.current!,
-      });
+      Event.Dispatch<DropData<TDrop, TDrag>>(
+        event.detail.containerElem,
+        targetKey,
+        'Dropped',
+        {
+          targetKey: '',
+          dropData,
+          dragData: event.detail.dragData,
+          dropElem: targetElement.current!,
+        }
+      );
 
       onHit && onHit(event);
       setHighlighted(false);
