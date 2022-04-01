@@ -58,10 +58,10 @@ interface DragDropContainerProps<TDrag, TDrop> {
   noDragging: boolean;
 
   // Callbacks (optional):
-  onDrop(event: CustomEvent<DropData<TDrop, TDrag>>): void;
-  onDrag(data: TDrag, target: Element, x: number, y: number): void;
-  onDragEnd(data: TDrag, target: Element, x: number, y: number): void;
   onDragStart(data: TDrag): void;
+  onDrag(data: TDrag, target: Element, x: number, y: number, forceUpdate: VoidFunction): void;
+  onDragEnd(data: TDrag, target: Element, x: number, y: number): void;
+  onDrop(event: CustomEvent<DropData<TDrop, TDrag>>): void;
 
   // Enable a render prop
   render?(state: DragDropContainerState): ReactNode;
@@ -114,7 +114,8 @@ class DragDropContainer<TDrag, TDrop> extends Component<
   private sourceElement: RefObject<HTMLSpanElement> =
     createRef<HTMLDivElement>();
   private currentTarget?: Element;
-  private prevTarget?: Element;
+  private previousTarget?: Element;
+  private previousData?: TDrag;
 
   public state: DragDropContainerState = {
     leftOffset: 0,
@@ -168,16 +169,16 @@ class DragDropContainer<TDrag, TDrop> extends Component<
       : target;
   };
 
+  // Generate events as we enter and leave elements while dragging
   private generateEnterLeaveEvents = (x: number, y: number): void => {
-    // Generate events as we enter and leave elements while dragging
-    const { targetKey } = this.props;
+    const { dragData, targetKey } = this.props;
 
     this.setCurrentTarget(x, y);
 
-    if (this.currentTarget !== this.prevTarget) {
-      if (this.prevTarget)
+    if (this.currentTarget !== this.previousTarget || dragData !== this.previousData) {
+      if (this.previousTarget)
         Event.Dispatch<DragData<TDrag>>(
-          this.prevTarget,
+          this.previousTarget,
           targetKey,
           'DragLeave',
           this.generateDragData()
@@ -192,7 +193,8 @@ class DragDropContainer<TDrag, TDrop> extends Component<
         );
     }
 
-    this.prevTarget = this.currentTarget;
+    this.previousData = dragData;
+    this.previousTarget = this.currentTarget;
   };
 
   private generateDropEvent = (x: number, y: number): void => {
@@ -286,7 +288,7 @@ class DragDropContainer<TDrag, TDrop> extends Component<
     }
 
     this.setState(stateChanges, () =>
-      onDrag(dragData, this.currentTarget!, x, y)
+      onDrag(dragData, this.currentTarget!, x, y, () => this.drag(x, y))
     );
   };
 
