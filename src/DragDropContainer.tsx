@@ -59,7 +59,13 @@ interface DragDropContainerProps<TDrag, TDrop> {
 
   // Callbacks (optional):
   onDragStart(data: TDrag): void;
-  onDrag(data: TDrag, target: Element, x: number, y: number, forceUpdate: VoidFunction): void;
+  onDrag(
+    data: TDrag,
+    target: Element,
+    x: number,
+    y: number,
+    forceUpdate: VoidFunction
+  ): void;
   onDragEnd(data: TDrag, target: Element, x: number, y: number): void;
   onDrop(event: CustomEvent<DropData<TDrop, TDrag>>): void;
 
@@ -175,7 +181,10 @@ class DragDropContainer<TDrag, TDrop> extends Component<
 
     this.setCurrentTarget(x, y);
 
-    if (this.currentTarget !== this.previousTarget || dragData !== this.previousData) {
+    if (
+      this.currentTarget !== this.previousTarget ||
+      dragData !== this.previousData
+    ) {
       if (this.previousTarget)
         Event.Dispatch<DragData<TDrag>>(
           this.previousTarget,

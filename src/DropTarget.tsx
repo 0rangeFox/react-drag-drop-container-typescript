@@ -31,10 +31,9 @@ type DropTargetProps<TDrop, TDrag> = {
   onHit?(event: CustomEvent<HitDragData<TDrag>>): void;
 };
 
-const DropTarget: FunctionComponent<DropTargetProps<any, any>> = <
-  TDrop,
-  TDrag
->({
+const DropTarget: FunctionComponent<
+  PropsWithChildren<DropTargetProps<any, any>>
+> = <TDrop, TDrag>({
   highlightClassName = 'highlighted',
   targetKey = 'ddc',
   dropData = {} as TDrop,
