@@ -1,6 +1,6 @@
 {
   "name": "react-drag-drop-container-typescript",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Drag & Drop Container in TypeScript",
   "keywords": [
     "drag",
@@ -21,7 +21,9 @@
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "module": "dist/react-drag-drop-container-typescript.esm.js",
-  "files": [ "dist" ],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "lint": "dts lint",
     "prepare": "dts build"
